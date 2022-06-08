@@ -27,10 +27,10 @@ def parse(data):
     name_user, user_country, question_text, answer_text = [], [], [], []
 
     for item in data['questions']:
-        name_user.append(item['wbUserDetails']['name'])
-        user_country.append(item['wbUserDetails']['country'])
-        question_text.append(item['text'].replace('\n', ' '))
-        answer_text.append(item['answer']['text'].replace('\n', ''))
+        name_user.append(item.get('wbUserDetails', 'Данные отсутствуют').get('name', 'Данные отсутствуют'))
+        user_country.append(item.get('wbUserDetails', 'Данные отсутствуют').get('country', 'Данные отсутствуют'))
+        question_text.append(item.get('text', 'Данные отсутствуют').replace('\n', ' '))
+        answer_text.append(item.get('answer', 'Данные отсутствуют').get('text', 'Данные отсутствуют').replace('\n', ''))
 
     unloading_excel(name_user, user_country, question_text, answer_text)
 
