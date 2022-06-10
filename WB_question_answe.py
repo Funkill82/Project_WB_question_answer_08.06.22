@@ -163,7 +163,7 @@ async def echo_message(msg: types.Message):
 
         docs = open(file_name, 'rb')
         await bot.send_document(msg.from_user.id, document=docs)
-        await bot.send_message(msg.from_user.id, 'Вот твой файл :)')
+        await bot.send_message(msg.from_user.id, 'Вот твой файл :) ')
 
     except:
         await bot.send_message(msg.from_user.id, 'nm_id Должен состоять только из чисел!')
