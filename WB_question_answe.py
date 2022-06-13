@@ -113,7 +113,7 @@ def feedbacks(imtId, name_user_feedbacks, user_country_feedbacks, question_text_
         step += 20
 
 
-def get_imt_id(nm_id:int):
+def get_imt_id(nm_id: int):
     """ По nm_id вытаскиваю imtId """
     URL = "https://wbx-content-v2.wbstatic.net/ru/" + str(nm_id) + ".json"
     r = requests.get(url=URL)
@@ -163,11 +163,10 @@ async def echo_message(msg: types.Message):
 
         docs = open(file_name, 'rb')
         await bot.send_document(msg.from_user.id, document=docs)
-        await bot.send_message(msg.from_user.id, 'Вот твой файл :) ')
+
 
     except:
         await bot.send_message(msg.from_user.id, 'nm_id Должен состоять только из чисел!')
-
 
 
 if __name__ == '__main__':
