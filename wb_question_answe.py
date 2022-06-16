@@ -1,61 +1,11 @@
 import requests
-import xlsxwriter
 import json
-from aiogram import Bot, types
-from aiogram.dispatcher import Dispatcher
-from aiogram.utils import executor
+from unloading import unloading_excel
+from app.bot.bot_methods import send_message, send_file
+import os
 
 
-def unloading_excel(user, country, question, answer,
-                    name_user_feedbacks, user_country_feedbacks, question_text_feedbacks, answer_text_feedbacks, imtId):
-    """ Выгружаю данные в файл excel на двух листах"""
-    try:
-        file_name = 'data' + str(imtId) + '.xlsx'
-        workbook = xlsxwriter.Workbook(file_name)
-        worksheet = workbook.add_worksheet('Вопрос-ответ')
-        worksheet2 = workbook.add_worksheet('Отзыв-ответ')
 
-        cell_format = workbook.add_format({'bold': True, 'font_color': 'red'})
-
-
-        worksheet.write(0, 0, 'Имя пользователя', cell_format)
-        worksheet.write(0, 1, 'Страна', cell_format)
-        worksheet.write(0, 2, 'Вопрос пользователя', cell_format)
-        worksheet.write(0, 3, 'Ответ', cell_format)
-
-        worksheet2.write(0, 0, 'Имя пользователя', cell_format)
-        worksheet2.write(0, 1, 'Страна', cell_format)
-        worksheet2.write(0, 2, 'Вопрос пользователя', cell_format)
-        worksheet2.write(0, 3, 'Ответ', cell_format)
-
-        worksheet.set_column(0, 1, 15)
-        worksheet.set_column(2, 3, 110)
-
-        worksheet2.set_column(0, 1, 15)
-        worksheet2.set_column(2, 3, 110)
-
-        cell_format = workbook.add_format({'bold': False, 'font_color': 'black', 'align': 'left', 'valign': 'top'})
-        cell_format.set_text_wrap()
-
-
-        for i in range(1, len(user)):
-            worksheet.write(i, 0, user[i - 1], cell_format)
-            worksheet.write(i, 1, country[i - 1], cell_format)
-            worksheet.write(i, 2, question[i - 1], cell_format)
-            worksheet.write(i, 3, answer[i - 1], cell_format)
-
-        for i in range(1, len(name_user_feedbacks)):
-            worksheet2.write(i, 0, name_user_feedbacks[i - 1], cell_format)
-            worksheet2.write(i, 1, user_country_feedbacks[i - 1], cell_format)
-            worksheet2.write(i, 2, question_text_feedbacks[i - 1], cell_format)
-            worksheet2.write(i, 3, answer_text_feedbacks[i - 1], cell_format)
-
-    except Exception as e:
-        print('Ошибка создания файла')
-
-    finally:
-        workbook.close()
-    return file_name
 
 def parse_questions(data, name_user, user_country, question_text, answer_text):
     """ Вытаскиваю данные по вопросам """
@@ -120,30 +70,11 @@ def get_imt_id(nm_id: int):
     data = r.json()
     return data.get("imt_id")
 
-
-
-
-bot = Bot(token='5301069444:AAFRT7o9Uue5J_BOP8-d6gYac2Cv0TdQKB0')
-dp = Dispatcher(bot)
-
-
-@dp.message_handler(commands=['start'])
-async def process_start_command(message: types.Message):
-    await message.reply("Привет!\nНапиши мне nm_id цифрами")
-
-
-@dp.message_handler(commands=['help'])
-async def process_help_command(message: types.Message):
-    await message.reply("Я могу формировать excel отчет на основании отправленного мне nm_id."
-                        " В отчете будет выборка по отзывам-ответам и вопросам-ответам. ")
-
-
-@dp.message_handler()
-async def echo_message(msg: types.Message):
-
+def start_app(msg: int):
+    username = msg.from_user.username
     try:
 
-        nm_id = int(msg.text)
+        nm_id = int(msg)
         name_user, user_country, question_text, answer_text = [], [], [], []
         name_user_feedbacks, user_country_feedbacks, question_text_feedbacks, answer_text_feedbacks = [], [], [], []
 
@@ -161,13 +92,25 @@ async def echo_message(msg: types.Message):
                                     name_user_feedbacks, user_country_feedbacks, question_text_feedbacks,
                                     answer_text_feedbacks, imtId)
 
-        docs = open(file_name, 'rb')
-        await bot.send_document(msg.from_user.id, document=docs)
-
+        file = open(file_name, 'rb')
+        send_file(username, file_name, file)
 
     except:
-        await bot.send_message(msg.from_user.id, 'nm_id Должен состоять только из чисел!')
+        send_message(username, 'nm_id Должен состоять только из чисел!')
 
 
-if __name__ == '__main__':
-    executor.start_polling(dp)
+    finally:
+        path = os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
+        os.remove(path)
+
+
+
+
+
+
+
+
+
+
+
+
